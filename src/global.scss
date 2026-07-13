@@ -1,0 +1,364 @@
+/* ─────────────────────────────────────────────────────────────
+   PixelScope — Global Theme & Design System
+   Premium dark theme with glassmorphism and gradient accents
+   ───────────────────────────────────────────────────────────── */
+
+/* Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+
+/* ─── CSS Custom Properties ─────────────────────────────────── */
+:root {
+  /* Primary gradient */
+  --ps-primary-start: #7c3aed;
+  --ps-primary-end: #06b6d4;
+  --ps-primary-gradient: linear-gradient(135deg, var(--ps-primary-start), var(--ps-primary-end));
+
+  /* Surface colors */
+  --ps-bg-base: #0a0a14;
+  --ps-bg-surface: #12121e;
+  --ps-bg-card: rgba(20, 20, 35, 0.75);
+  --ps-bg-card-hover: rgba(30, 30, 50, 0.85);
+
+  /* Text colors */
+  --ps-text-primary: #ffffff;
+  --ps-text-secondary: rgba(255, 255, 255, 0.65);
+  --ps-text-muted: rgba(255, 255, 255, 0.35);
+
+  /* Channel colors */
+  --ps-red: #ff4d4d;
+  --ps-green: #4dff88;
+  --ps-blue: #4d88ff;
+  --ps-cyan: #06b6d4;
+  --ps-magenta: #e91e63;
+  --ps-yellow: #ffc107;
+
+  /* Glass effect */
+  --ps-glass-bg: rgba(20, 20, 35, 0.65);
+  --ps-glass-border: rgba(255, 255, 255, 0.08);
+  --ps-glass-blur: blur(20px);
+
+  /* Spacing */
+  --ps-radius-sm: 8px;
+  --ps-radius-md: 12px;
+  --ps-radius-lg: 16px;
+  --ps-radius-xl: 24px;
+
+  /* Shadows */
+  --ps-shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.2);
+  --ps-shadow-md: 0 4px 16px rgba(0, 0, 0, 0.3);
+  --ps-shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.4);
+  --ps-shadow-glow: 0 0 20px rgba(124, 58, 237, 0.3);
+}
+
+/* ─── Global Reset & Defaults ───────────────────────────────── */
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: var(--ps-bg-base);
+  color: var(--ps-text-primary);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ─── Ionic Theme Overrides ─────────────────────────────────── */
+ion-content {
+  --background: var(--ps-bg-base);
+  --color: var(--ps-text-primary);
+}
+
+ion-header {
+  ion-toolbar {
+    --background: rgba(10, 10, 20, 0.9);
+    --color: var(--ps-text-primary);
+    --border-color: rgba(255, 255, 255, 0.06);
+    backdrop-filter: var(--ps-glass-blur);
+  }
+
+  ion-title {
+    font-weight: 700;
+    font-size: 18px;
+    letter-spacing: 0.5px;
+  }
+}
+
+ion-tab-bar {
+  --background: rgba(10, 10, 20, 0.95);
+  --border: 1px solid rgba(255, 255, 255, 0.06);
+  backdrop-filter: var(--ps-glass-blur);
+}
+
+ion-tab-button {
+  --color: var(--ps-text-muted);
+  --color-selected: var(--ps-primary-start);
+}
+
+/* Segments */
+ion-segment {
+  --background: rgba(255, 255, 255, 0.05);
+  border-radius: var(--ps-radius-md);
+  padding: 3px;
+}
+
+ion-segment-button {
+  --background-checked: var(--ps-primary-gradient);
+  --color: var(--ps-text-secondary);
+  --color-checked: #fff;
+  --indicator-color: transparent;
+  --border-radius: var(--ps-radius-sm);
+  font-size: 13px;
+  font-weight: 600;
+  min-height: 36px;
+  text-transform: none;
+  letter-spacing: 0.3px;
+  transition: all 0.2s ease;
+}
+
+/* Cards */
+ion-card {
+  --background: var(--ps-bg-card);
+  --color: var(--ps-text-primary);
+  border-radius: var(--ps-radius-lg);
+  border: 1px solid var(--ps-glass-border);
+  box-shadow: var(--ps-shadow-md);
+  margin: 8px;
+  backdrop-filter: var(--ps-glass-blur);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--ps-shadow-lg);
+  }
+}
+
+ion-card-header {
+  padding: 16px 16px 8px;
+}
+
+ion-card-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--ps-text-primary);
+}
+
+ion-card-content {
+  padding: 8px 16px 16px;
+  font-size: 14px;
+  color: var(--ps-text-secondary);
+}
+
+/* Accordion */
+ion-accordion-group {
+  background: transparent;
+  margin-top: 16px;
+}
+
+ion-accordion {
+  background: transparent;
+  border-radius: var(--ps-radius-md) !important;
+  margin-bottom: 8px;
+  overflow: hidden;
+
+  .ion-accordion-toggle-icon {
+    color: var(--ps-text-muted);
+  }
+}
+
+ion-accordion > [slot="header"] {
+  --background: rgba(255, 255, 255, 0.04);
+  --color: var(--ps-text-secondary);
+  --padding-start: 16px;
+  --padding-end: 16px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+ion-accordion > [slot="content"] {
+  background: rgba(255, 255, 255, 0.02);
+  padding: 16px;
+  font-size: 13px;
+  line-height: 1.7;
+  color: var(--ps-text-secondary);
+}
+
+/* Select */
+ion-select {
+  --background: rgba(255, 255, 255, 0.06);
+  --border-radius: var(--ps-radius-sm);
+  --padding-start: 12px;
+  --padding-end: 12px;
+  --placeholder-color: var(--ps-text-muted);
+  --color: var(--ps-text-primary);
+  font-size: 14px;
+}
+
+/* Range */
+ion-range {
+  --bar-background: rgba(255, 255, 255, 0.1);
+  --bar-background-active: var(--ps-primary-gradient);
+  --knob-background: var(--ps-primary-start);
+  --knob-size: 24px;
+  --bar-height: 4px;
+}
+
+/* Buttons */
+ion-button {
+  --border-radius: var(--ps-radius-sm);
+  font-weight: 600;
+  text-transform: none;
+  letter-spacing: 0.3px;
+}
+
+/* ─── Utility Classes ───────────────────────────────────────── */
+.glass-card {
+  background: var(--ps-glass-bg);
+  backdrop-filter: var(--ps-glass-blur);
+  border: 1px solid var(--ps-glass-border);
+  border-radius: var(--ps-radius-lg);
+  padding: 20px;
+}
+
+.gradient-text {
+  background: var(--ps-primary-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.section-title {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: var(--ps-text-muted);
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+  gap: 8px;
+}
+
+.stat-item {
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: var(--ps-radius-sm);
+  padding: 10px 12px;
+  text-align: center;
+}
+
+.stat-label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--ps-text-muted);
+  margin-bottom: 4px;
+}
+
+.stat-value {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ps-text-primary);
+}
+
+.no-image-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  text-align: center;
+  color: var(--ps-text-muted);
+
+  ion-icon {
+    font-size: 64px;
+    margin-bottom: 16px;
+    opacity: 0.3;
+  }
+
+  h2 {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: var(--ps-text-secondary);
+  }
+
+  p {
+    font-size: 14px;
+    max-width: 300px;
+    line-height: 1.6;
+  }
+}
+
+/* ─── Animations ────────────────────────────────────────────── */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes fadeSlideUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.4s ease-out;
+}
+
+.animate-fade-slide-up {
+  animation: fadeSlideUp 0.5s ease-out;
+}
+
+/* ─── Scrollbar Styling ─────────────────────────────────────── */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* ─── Responsive Helpers ────────────────────────────────────── */
+@media (max-width: 576px) {
+  ion-card {
+    margin: 6px 0;
+  }
+
+  .glass-card {
+    padding: 14px;
+  }
+
+  ion-segment-button {
+    font-size: 11px;
+    min-height: 32px;
+  }
+}
+
+@media (min-width: 992px) {
+  ion-content {
+    --padding-start: 16px;
+    --padding-end: 16px;
+  }
+}
