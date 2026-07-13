@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">PixelScope</string>
+    <string name="title_activity_main">PixelScope</string>
+    <string name="package_name">com.pixelscope.app</string>
+    <string name="custom_url_scheme">com.pixelscope.app</string>
+</resources>
