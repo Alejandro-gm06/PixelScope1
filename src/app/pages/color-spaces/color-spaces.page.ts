@@ -1,4 +1,4 @@
-import { Component, computed, Signal, ChangeDetectionStrategy } from '@angular/core';
+import { Component, computed, signal, Signal, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -39,7 +39,7 @@ import { ColorSpace } from '../../models/pixel-data.model';
 
       <ng-container *ngIf="imageService.loaded()">
         <div class="space-selector-container">
-          <ion-segment [(ngModel)]="selectedSpace" scrollable>
+          <ion-segment [ngModel]="selectedSpace()" (ngModelChange)="selectedSpace.set($event)" scrollable>
             <ion-segment-button value="original"><ion-label>RGB (Original)</ion-label></ion-segment-button>
             <ion-segment-button value="grayscale"><ion-label>Grises</ion-label></ion-segment-button>
             <ion-segment-button value="cmyk"><ion-label>CMYK (Simulado)</ion-label></ion-segment-button>
@@ -49,8 +49,8 @@ import { ColorSpace } from '../../models/pixel-data.model';
           </ion-segment>
           
           <!-- Sub-toggle for Saturation and Luminosity (HSI vs HSV) -->
-          <div class="sub-toggle animate-fade-in" *ngIf="selectedSpace === 'saturation' || selectedSpace === 'intensity'">
-            <ion-segment [(ngModel)]="modelVariant" class="compact-segment">
+          <div class="sub-toggle animate-fade-in" *ngIf="selectedSpace() === 'saturation' || selectedSpace() === 'intensity'">
+            <ion-segment [ngModel]="modelVariant()" (ngModelChange)="modelVariant.set($event)" class="compact-segment">
               <ion-segment-button value="hsi">
                 <ion-label>Modelo HSI (Intensidad)</ion-label>
               </ion-segment-button>
@@ -65,7 +65,7 @@ import { ColorSpace } from '../../models/pixel-data.model';
           <app-image-canvas [imageData]="processedImage()"></app-image-canvas>
         </ion-card>
 
-        <ion-accordion-group class="education-section animate-fade-slide-up" [value]="selectedSpace">
+        <ion-accordion-group class="education-section animate-fade-slide-up" [value]="selectedSpace()">
           
           <ion-accordion value="original">
             <ion-item slot="header">
@@ -192,8 +192,8 @@ import { ColorSpace } from '../../models/pixel-data.model';
   `]
 })
 export class ColorSpacesPage {
-  selectedSpace = 'original';
-  modelVariant: 'hsi' | 'hsv' = 'hsi';
+  selectedSpace = signal<string>('original');
+  modelVariant = signal<'hsi' | 'hsv'>('hsi');
   
   processedImage: Signal<ImageData | null>;
 
@@ -206,16 +206,18 @@ export class ColorSpacesPage {
     
     this.processedImage = computed(() => {
       const img = this.imageService.imageData();
+      const space = this.selectedSpace();
+      const variant = this.modelVariant();
       if (!img) return null;
       
       let spaceToProcess: ColorSpace = 'original';
       
-      if (this.selectedSpace === 'saturation') {
-        spaceToProcess = this.modelVariant === 'hsi' ? 'saturation-hsi' : 'saturation-hsv';
-      } else if (this.selectedSpace === 'intensity') {
-        spaceToProcess = this.modelVariant === 'hsi' ? 'intensity' : 'value';
+      if (space === 'saturation') {
+        spaceToProcess = variant === 'hsi' ? 'saturation-hsi' : 'saturation-hsv';
+      } else if (space === 'intensity') {
+        spaceToProcess = variant === 'hsi' ? 'intensity' : 'value';
       } else {
-        spaceToProcess = this.selectedSpace as ColorSpace;
+        spaceToProcess = space as ColorSpace;
       }
       
       return this.processingService.processColorSpace(img, spaceToProcess);

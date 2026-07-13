@@ -1,5 +1,6 @@
-import { Component, computed, Signal, ChangeDetectionStrategy, ViewChild, ElementRef, AfterViewChecked } from '@angular/core';
+import { Component, computed, signal, Signal, ChangeDetectionStrategy, ViewChild, ElementRef, AfterViewChecked, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import {
   IonHeader, IonToolbar, IonTitle, IonContent, IonGrid, IonRow, IonCol,
@@ -18,7 +19,7 @@ import { HistogramData } from '../../models/pixel-data.model';
   selector: 'app-histograms',
   standalone: true,
   imports: [
-    CommonModule, IonHeader, IonToolbar, IonTitle, IonContent, IonGrid,
+    CommonModule, FormsModule, IonHeader, IonToolbar, IonTitle, IonContent, IonGrid,
     IonRow, IonCol, IonButton, IonIcon, IonCard, IonCardHeader, IonCardTitle,
     IonCardContent, IonAccordionGroup, IonAccordion, IonItem, IonLabel,
     IonSegment, IonSegmentButton, HistogramChartComponent
@@ -58,7 +59,7 @@ import { HistogramData } from '../../models/pixel-data.model';
 
         <!-- View Controls -->
         <div class="view-controls">
-          <ion-segment [value]="viewMode" (ionChange)="viewMode = $event.detail.value">
+          <ion-segment [ngModel]="viewMode()" (ngModelChange)="viewMode.set($event)">
             <ion-segment-button value="separated">
               <ion-label>Separados</ion-label>
             </ion-segment-button>
@@ -69,14 +70,14 @@ import { HistogramData } from '../../models/pixel-data.model';
         </div>
 
         <!-- Combined View -->
-        <ion-card class="combined-card animate-fade-in" *ngIf="viewMode === 'combined'" [class.hidden]="viewMode !== 'combined'">
+        <ion-card class="combined-card animate-fade-in" *ngIf="viewMode() === 'combined'" [class.hidden]="viewMode() !== 'combined'">
           <ion-card-content>
             <canvas #combinedCanvas width="800" height="300" class="combined-canvas"></canvas>
           </ion-card-content>
         </ion-card>
 
         <!-- Separated View -->
-        <ion-grid class="histograms-grid animate-fade-in" *ngIf="viewMode === 'separated'">
+        <ion-grid class="histograms-grid animate-fade-in" *ngIf="viewMode() === 'separated'">
           <ion-row>
             <!-- Red -->
             <ion-col size="12" size-md="6">
@@ -242,10 +243,10 @@ import { HistogramData } from '../../models/pixel-data.model';
     .education-content li { margin-bottom: 6px; line-height: 1.5; }
   `]
 })
-export class HistogramsPage implements AfterViewChecked {
+export class HistogramsPage {
   @ViewChild('combinedCanvas') combinedCanvasRef?: ElementRef<HTMLCanvasElement>;
   
-  viewMode: string | any = 'separated';
+  viewMode = signal<'separated' | 'combined'>('separated');
   
   redHist: Signal<HistogramData | null>;
   greenHist: Signal<HistogramData | null>;
@@ -287,15 +288,13 @@ export class HistogramsPage implements AfterViewChecked {
       const img = this.imageService.imageData();
       return img ? this.analysisService.analyzeImage(img) : null;
     });
-  }
-
-  ngAfterViewChecked() {
-    if (this.viewMode === 'combined' && this.combinedCanvasRef && !this.hasDrawnCombined) {
-      this.drawCombinedHistogram();
-      this.hasDrawnCombined = true;
-    } else if (this.viewMode !== 'combined') {
-      this.hasDrawnCombined = false;
-    }
+    
+    effect(() => {
+      const mode = this.viewMode();
+      if (mode === 'combined') {
+        requestAnimationFrame(() => this.drawCombinedHistogram());
+      }
+    });
   }
 
   private drawCombinedHistogram() {

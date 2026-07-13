@@ -1,5 +1,6 @@
-import { Component, computed, Signal, ChangeDetectionStrategy } from '@angular/core';
+import { Component, computed, signal, Signal, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import {
   IonHeader, IonToolbar, IonTitle, IonContent, IonGrid, IonRow, IonCol,
@@ -16,7 +17,7 @@ import { ImageCanvasComponent } from '../../components/image-canvas/image-canvas
   selector: 'app-channels',
   standalone: true,
   imports: [
-    CommonModule, IonHeader, IonToolbar, IonTitle, IonContent, IonGrid,
+    CommonModule, FormsModule, IonHeader, IonToolbar, IonTitle, IonContent, IonGrid,
     IonRow, IonCol, IonSegment, IonSegmentButton, IonLabel, IonAccordionGroup,
     IonAccordion, IonItem, IonButton, IonIcon, ImageCanvasComponent
   ],
@@ -38,7 +39,7 @@ import { ImageCanvasComponent } from '../../components/image-canvas/image-canvas
 
       <ng-container *ngIf="imageService.loaded()">
         <div class="view-controls">
-          <ion-segment [(ngModel)]="viewMode" (ionChange)="onModeChange($event)" value="color">
+          <ion-segment [ngModel]="viewMode()" (ionChange)="onModeChange($event)" value="color">
             <ion-segment-button value="color">
               <ion-label>Color</ion-label>
             </ion-segment-button>
@@ -172,7 +173,7 @@ import { ImageCanvasComponent } from '../../components/image-canvas/image-canvas
   `]
 })
 export class ChannelsPage {
-  viewMode: 'color' | 'gray' = 'color';
+  viewMode = signal<'color' | 'gray'>('color');
   
   original: Signal<ImageData | null>;
   redChannel: Signal<ImageData | null>;
@@ -190,31 +191,34 @@ export class ChannelsPage {
     
     this.redChannel = computed(() => {
       const img = this.imageService.imageData();
+      const mode = this.viewMode();
       if (!img) return null;
-      return this.viewMode === 'color' 
+      return mode === 'color' 
         ? this.processingService.extractChannel(img, 'red')
         : this.processingService.extractChannelGray(img, 'red');
     });
     
     this.greenChannel = computed(() => {
       const img = this.imageService.imageData();
+      const mode = this.viewMode();
       if (!img) return null;
-      return this.viewMode === 'color' 
+      return mode === 'color' 
         ? this.processingService.extractChannel(img, 'green')
         : this.processingService.extractChannelGray(img, 'green');
     });
     
     this.blueChannel = computed(() => {
       const img = this.imageService.imageData();
+      const mode = this.viewMode();
       if (!img) return null;
-      return this.viewMode === 'color' 
+      return mode === 'color' 
         ? this.processingService.extractChannel(img, 'blue')
         : this.processingService.extractChannelGray(img, 'blue');
     });
   }
 
   onModeChange(event: any) {
-    this.viewMode = event.detail.value;
+    this.viewMode.set(event.detail.value);
   }
 
   goHome() {

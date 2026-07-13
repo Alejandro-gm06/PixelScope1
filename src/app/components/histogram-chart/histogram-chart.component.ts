@@ -88,17 +88,19 @@ export class HistogramChartComponent implements AfterViewInit, OnChanges {
   private draw(): void {
     if (!this.data.length || !this.ctx) return;
 
-    // High DPI support
-    const dpr = window.devicePixelRatio || 1;
-    const rect = this.canvas.getBoundingClientRect();
-    const w = rect.width;
-    const h = rect.height;
-    this.canvas.width = w * dpr;
-    this.canvas.height = h * dpr;
-    this.ctx.scale(dpr, dpr);
+    // Use requestAnimationFrame to ensure layout has settled
+    requestAnimationFrame(() => {
+      // High DPI support
+      const dpr = window.devicePixelRatio || 1;
+      const rect = this.canvas.getBoundingClientRect();
+      const w = rect.width || this.canvas.parentElement?.clientWidth || 300;
+      const h = rect.height || 140;
+      this.canvas.width = w * dpr;
+      this.canvas.height = h * dpr;
+      this.ctx.scale(dpr, dpr);
 
-    // Clear
-    this.ctx.clearRect(0, 0, w, h);
+      // Clear
+      this.ctx.clearRect(0, 0, w, h);
 
     // Find max value for normalization
     const maxVal = Math.max(...this.data, 1);
@@ -137,9 +139,10 @@ export class HistogramChartComponent implements AfterViewInit, OnChanges {
         this.ctx.lineTo(x + barWidth / 2, y);
       }
     }
-    this.ctx.strokeStyle = this.color;
-    this.ctx.lineWidth = 1.5;
-    this.ctx.stroke();
+      this.ctx.strokeStyle = this.color;
+      this.ctx.lineWidth = 1.5;
+      this.ctx.stroke();
+    });
   }
 
   private hexToRgba(hex: string, alpha: number): string {

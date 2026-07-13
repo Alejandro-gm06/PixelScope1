@@ -1,4 +1,4 @@
-import { Component, computed, Signal, ChangeDetectionStrategy, ViewChild, ElementRef, AfterViewChecked } from '@angular/core';
+import { Component, computed, signal, Signal, ChangeDetectionStrategy, ViewChild, ElementRef, AfterViewChecked, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -41,7 +41,7 @@ import { ColorSpace } from '../../models/pixel-data.model';
       <ng-container *ngIf="imageService.loaded()">
         <!-- Mode Selector -->
         <div class="controls-section animate-fade-in">
-          <ion-segment [(ngModel)]="viewMode" scrollable>
+          <ion-segment [ngModel]="viewMode()" (ngModelChange)="viewMode.set($event)" scrollable>
             <ion-segment-button value="side">
               <ion-label>Lado a lado</ion-label>
             </ion-segment-button>
@@ -56,38 +56,38 @@ import { ColorSpace } from '../../models/pixel-data.model';
           <div class="selectors-row">
             <div class="selector-group">
               <span class="selector-label">Izquierda / Fondo</span>
-              <ion-select [(ngModel)]="leftSpace" interface="popover">
+              <ion-select [ngModel]="leftSpace()" (ngModelChange)="leftSpace.set($event)" interface="popover">
                 <ion-select-option *ngFor="let opt of spaceOptions" [value]="opt.value">{{ opt.label }}</ion-select-option>
               </ion-select>
             </div>
             
             <div class="selector-group">
               <span class="selector-label">Derecha / Frente</span>
-              <ion-select [(ngModel)]="rightSpace" interface="popover">
+              <ion-select [ngModel]="rightSpace()" (ngModelChange)="rightSpace.set($event)" interface="popover">
                 <ion-select-option *ngFor="let opt of spaceOptions" [value]="opt.value">{{ opt.label }}</ion-select-option>
               </ion-select>
             </div>
           </div>
           
           <!-- Opacity slider for overlay mode -->
-          <div class="overlay-controls animate-fade-in" *ngIf="viewMode === 'overlay'">
+          <div class="overlay-controls animate-fade-in" *ngIf="viewMode() === 'overlay'">
             <span class="range-label">Opacidad de la capa superior</span>
-            <ion-range [(ngModel)]="opacity" min="0" max="100" pin="true"></ion-range>
+            <ion-range [ngModel]="opacity()" (ngModelChange)="opacity.set($event)" min="0" max="100" pin="true"></ion-range>
           </div>
         </div>
 
         <!-- Side by side view -->
-        <ion-grid class="side-by-side-grid animate-fade-in" *ngIf="viewMode === 'side'">
+        <ion-grid class="side-by-side-grid animate-fade-in" *ngIf="viewMode() === 'side'">
           <ion-row>
             <ion-col size="12" size-md="6">
               <ion-card class="view-card">
-                <div class="card-label">{{ getLabelFor(leftSpace) }}</div>
+                <div class="card-label">{{ getLabelFor(leftSpace()) }}</div>
                 <app-image-canvas [imageData]="leftImage()"></app-image-canvas>
               </ion-card>
             </ion-col>
             <ion-col size="12" size-md="6">
               <ion-card class="view-card">
-                <div class="card-label">{{ getLabelFor(rightSpace) }}</div>
+                <div class="card-label">{{ getLabelFor(rightSpace()) }}</div>
                 <app-image-canvas [imageData]="rightImage()"></app-image-canvas>
               </ion-card>
             </ion-col>
@@ -95,10 +95,10 @@ import { ColorSpace } from '../../models/pixel-data.model';
         </ion-grid>
 
         <!-- Slider and Overlay views (Custom Canvas) -->
-        <ion-card class="custom-view-card animate-fade-in" *ngIf="viewMode === 'slider' || viewMode === 'overlay'">
+        <ion-card class="custom-view-card animate-fade-in" *ngIf="viewMode() === 'slider' || viewMode() === 'overlay'">
           <div class="card-label dual">
-            <span class="left">{{ getLabelFor(leftSpace) }}</span>
-            <span class="right">{{ getLabelFor(rightSpace) }}</span>
+            <span class="left">{{ getLabelFor(leftSpace()) }}</span>
+            <span class="right">{{ getLabelFor(rightSpace()) }}</span>
           </div>
           
           <div class="canvas-container" 
@@ -112,7 +112,7 @@ import { ColorSpace } from '../../models/pixel-data.model';
             <canvas #customCanvas class="custom-canvas"></canvas>
             
             <!-- Slider handle -->
-            <div class="slider-handle" *ngIf="viewMode === 'slider'" [style.left.%]="sliderPosition">
+            <div class="slider-handle" *ngIf="viewMode() === 'slider'" [style.left.%]="sliderPosition()">
               <div class="slider-line"></div>
               <div class="slider-button">
                 <div class="arrow left-arrow"></div>
@@ -285,18 +285,16 @@ import { ColorSpace } from '../../models/pixel-data.model';
     }
   `]
 })
-export class ComparatorPage implements AfterViewChecked {
+export class ComparatorPage {
   @ViewChild('customCanvas') customCanvasRef?: ElementRef<HTMLCanvasElement>;
   
-  viewMode: 'side' | 'slider' | 'overlay' = 'slider';
+  viewMode = signal<'side' | 'slider' | 'overlay'>('slider');
+  leftSpace = signal<ColorSpace>('original');
+  rightSpace = signal<ColorSpace>('grayscale');
+  opacity = signal<number>(50); // 0-100
+  sliderPosition = signal<number>(50); // 0-100 percent
   
-  leftSpace: ColorSpace = 'original';
-  rightSpace: ColorSpace = 'grayscale';
-  opacity = 50; // 0-100
-  
-  sliderPosition = 50; // 0-100 percent
   private isDragging = false;
-  private hasRenderedCustom = false;
   
   spaceOptions = [
     { value: 'original', label: 'Original (RGB)' },
@@ -324,12 +322,28 @@ export class ComparatorPage implements AfterViewChecked {
     
     this.leftImage = computed(() => {
       const img = this.imageService.imageData();
-      return img ? this.processingService.processColorSpace(img, this.leftSpace) : null;
+      const space = this.leftSpace();
+      return img ? this.processingService.processColorSpace(img, space) : null;
     });
     
     this.rightImage = computed(() => {
       const img = this.imageService.imageData();
-      return img ? this.processingService.processColorSpace(img, this.rightSpace) : null;
+      const space = this.rightSpace();
+      return img ? this.processingService.processColorSpace(img, space) : null;
+    });
+    
+    // We use effect to draw the canvas whenever signals change to avoid AfterViewChecked constant redraws
+    effect(() => {
+      const vMode = this.viewMode();
+      const lImg = this.leftImage();
+      const rImg = this.rightImage();
+      const opac = this.opacity();
+      const sPos = this.sliderPosition();
+      
+      if (vMode === 'slider' || vMode === 'overlay') {
+        // use requestAnimationFrame to ensure canvas exists
+        requestAnimationFrame(() => this.drawCustomView(lImg, rImg, vMode, opac, sPos));
+      }
     });
   }
 
@@ -337,20 +351,9 @@ export class ComparatorPage implements AfterViewChecked {
     return this.spaceOptions.find(o => o.value === value)?.label || value;
   }
 
-  ngAfterViewChecked() {
-    if ((this.viewMode === 'slider' || this.viewMode === 'overlay') && this.customCanvasRef) {
-      // Small optimization to avoid constant redraws unless necessary
-      // For a real app, we'd wire this to signals, but here we just redraw every check
-      this.drawCustomView();
-    }
-  }
-
-  private drawCustomView() {
+  private drawCustomView(lImg: ImageData | null, rImg: ImageData | null, vMode: string, opac: number, sPos: number) {
     const canvas = this.customCanvasRef?.nativeElement;
     const ctx = canvas?.getContext('2d', { willReadFrequently: true });
-    
-    const lImg = this.leftImage();
-    const rImg = this.rightImage();
     
     if (!canvas || !ctx || !lImg || !rImg) return;
     
@@ -359,47 +362,42 @@ export class ComparatorPage implements AfterViewChecked {
       canvas.height = lImg.height;
     }
     
-    if (this.viewMode === 'slider') {
+    if (vMode === 'slider') {
       // Draw left
       ctx.putImageData(lImg, 0, 0);
       
       // Draw right (clip to slider position)
-      const dividerX = Math.round((this.sliderPosition / 100) * lImg.width);
+      const dividerX = Math.round((sPos / 100) * lImg.width);
       const rightWidth = lImg.width - dividerX;
       
       if (rightWidth > 0) {
-        // Create temp canvas for right image
         const tempCanvas = document.createElement('canvas');
         tempCanvas.width = lImg.width;
         tempCanvas.height = lImg.height;
         tempCanvas.getContext('2d')!.putImageData(rImg, 0, 0);
         
-        // Draw only the right portion
         ctx.drawImage(
           tempCanvas, 
-          dividerX, 0, rightWidth, lImg.height, // source rect
-          dividerX, 0, rightWidth, lImg.height  // dest rect
+          dividerX, 0, rightWidth, lImg.height,
+          dividerX, 0, rightWidth, lImg.height
         );
       }
-    } else if (this.viewMode === 'overlay') {
-      // Draw left (background)
+    } else if (vMode === 'overlay') {
       ctx.putImageData(lImg, 0, 0);
       
-      // Draw right (foreground) with opacity
       const tempCanvas = document.createElement('canvas');
       tempCanvas.width = lImg.width;
       tempCanvas.height = lImg.height;
       tempCanvas.getContext('2d')!.putImageData(rImg, 0, 0);
       
-      ctx.globalAlpha = this.opacity / 100;
+      ctx.globalAlpha = opac / 100;
       ctx.drawImage(tempCanvas, 0, 0);
       ctx.globalAlpha = 1.0;
     }
   }
 
-  // Drag handlers for slider
   startDrag() {
-    if (this.viewMode === 'slider') this.isDragging = true;
+    if (this.viewMode() === 'slider') this.isDragging = true;
   }
   
   stopDrag() {
@@ -407,15 +405,15 @@ export class ComparatorPage implements AfterViewChecked {
   }
   
   onMouseMove(e: MouseEvent) {
-    if (!this.isDragging || this.viewMode !== 'slider') return;
+    if (!this.isDragging || this.viewMode() !== 'slider') return;
     this.updateSliderPos(e.clientX);
   }
   
   onTouchMove(e: TouchEvent) {
-    if (!this.isDragging || this.viewMode !== 'slider') return;
+    if (!this.isDragging || this.viewMode() !== 'slider') return;
     if (e.touches.length > 0) {
       this.updateSliderPos(e.touches[0].clientX);
-      e.preventDefault(); // Prevent scrolling
+      e.preventDefault();
     }
   }
   
@@ -423,7 +421,7 @@ export class ComparatorPage implements AfterViewChecked {
     const rect = this.customCanvasRef!.nativeElement.getBoundingClientRect();
     let x = clientX - rect.left;
     x = Math.max(0, Math.min(x, rect.width));
-    this.sliderPosition = (x / rect.width) * 100;
+    this.sliderPosition.set((x / rect.width) * 100);
   }
 
   goHome() {
