@@ -1,0 +1,57 @@
+# 📑 Descripción Funcional de Pestañas: PixelScope
+
+A continuación se detalla exhaustivamente la funcionalidad, propósito y herramientas integradas en cada una de las 6 pestañas principales que componen la interfaz de la aplicación PixelScope.
+
+---
+
+## 🏠 1. Pestaña: Inicio (Home)
+**Propósito:** Es el punto de entrada y el gestor del estado global de la aplicación.
+*   **Selector de Archivo Local:** Permite al usuario importar imágenes con formato JPG o PNG directamente desde el disco duro de su computadora o almacenamiento del teléfono.
+*   **Captura de Cámara Nivel Nativo:** Utiliza el hardware del dispositivo (a través de la API de Capacitor) para tomar una fotografía en tiempo real e inyectarla directamente en el motor de procesamiento.
+*   **Imágenes de Muestra (Samples):** Ofrece un banco de 4 imágenes pre-cargadas de alta resolución (Paisaje, Retrato, Océano y Paleta de Colores) ideales para realizar pruebas estandarizadas si el usuario no cuenta con fotos propias.
+*   **Previsualización:** Muestra una vista previa en miniatura de la imagen cargada, confirmando que el motor de `ImageData` ha procesado la matriz correctamente.
+
+---
+
+## 🔴 2. Pestaña: Canales (Descomposición RGB)
+**Propósito:** Demostrar el modelo aditivo de color descomponiendo la imagen en sus fuentes de luz primarias.
+*   **División en Cuadrícula 2x2:** Muestra simultáneamente la imagen original junto con tres "clones" matemáticos, cada uno aislando un canal de memoria (Rojo, Verde o Azul) y poniendo los otros dos canales a cero.
+*   **Modo de Visualización por Tono (Color):** Pinta el canal aislado en su color natural para entender cómo la luz de colores se suma.
+*   **Modo de Visualización de Intensidad (Escala de Grises):** Transforma el canal aislado en blanco y negro puro. Esto es crucial a nivel académico, ya que permite ver la "cantidad" de luz que aporta ese canal, independientemente del tinte de la luz.
+*   **Módulo Educativo:** Un acordeón desplegable que explica la teoría del modelo RGB.
+
+---
+
+## 🌈 3. Pestaña: Espacios de Color (Transformaciones Matemáticas)
+**Propósito:** Aplicar transformaciones algebraicas complejas a cada píxel para traducir la imagen a distintos modelos matemáticos de representación.
+*   **Filtro de Grises (BT.601):** Aplica la fórmula de luma estándar (ponderando el color verde más que el azul/rojo) para simular la percepción visual humana en blanco y negro.
+*   **Simulación CMYK:** Invierte el modelo aditivo (luz) a un modelo sustractivo (tinta), mostrando cómo se calcularían los canales Cian, Magenta y Amarillo si la imagen fuera a imprimirse en papel.
+*   **Extracción de Matiz (Hue):** Elimina toda la iluminación y contraste, mostrando únicamente la "pureza" del color en la escala angular de $0$ a $360$ grados.
+*   **Extracción de Saturación y Luminosidad:** Muestra el grado de viveza del color y su nivel de iluminación independientemente.
+*   **Selector Dual HSI vs HSV:** Una herramienta técnica que permite alternar las fórmulas trigonométricas de Saturación e Intensidad entre el modelo científico (HSI) y el modelo de diseño gráfico (HSV), mostrando las variaciones de renderizado en tiempo real.
+
+---
+
+## 🔍 4. Pestaña: Inspector de Píxeles
+**Propósito:** Proveer un análisis micro-métrico de la información de los píxeles individuales.
+*   **Canvas Interactivo:** Permite al usuario arrastrar el dedo o el ratón por toda la imagen para capturar las coordenadas matemáticas $(X, Y)$ exactas de un punto.
+*   **Lupa Digital (Magnifier):** Renderiza un lienzo secundario que aísla un radio de 20x20 píxeles alrededor de la coordenada seleccionada. Utiliza un renderizado "Nearest Neighbor" (sin suavizado) para exponer físicamente los "bloques" o mosaicos cuadrados que componen la foto.
+*   **Consola de Valores:** Un panel lateral (o inferior en móviles) que traduce el píxel seleccionado a sus valores absolutos: Código HEX, Porcentajes C,M,Y,K y los grados geométricos de HSI/HSV.
+
+---
+
+## 📊 5. Pestaña: Histogramas (Estadística de la Luz)
+**Propósito:** Evaluar matemáticamente el nivel de exposición, contraste y balance de luces de la fotografía.
+*   **Asistente de Análisis Inteligente:** Lee los datos estadísticos y genera un reporte en texto automáticamente (por ejemplo: "La imagen está ligeramente sobreexpuesta" o "El contraste es bajo").
+*   **Gráficos Individuales:** Renderiza cuatro distribuciones de barras $O(N)$ correspondientes a las frecuencias del color Rojo, Verde, Azul y la Luminancia gris general.
+*   **Datos Estadísticos Puros:** Calcula la Media, Moda, y Desviación Estándar para cada color, aportando datos numéricos irrefutables sobre la distribución de la luz.
+*   **Vista Superpuesta (Overlay):** Fusiona las cuatro gráficas utilizando un método de renderizado de "pantalla" (Screen blend mode), replicando fielmente los visores que tienen las cámaras réflex DSLR profesionales.
+
+---
+
+## ⚖️ 6. Pestaña: Comparador (Análisis Diferencial)
+**Propósito:** Contrastar visualmente dos modelos de color distintos de manera interactiva.
+*   **Selectores de Estado:** Dos menús desplegables que permiten elegir cualquier canal o espacio matemático previamente calculado (Ej: "Ver Canal Verde vs Escala de Grises").
+*   **Modo 'Lado a Lado':** Separa las imágenes en dos cajas adyacentes independientes.
+*   **Modo 'Slider' Interactivo:** Dibuja ambas imágenes en un mismo lienzo con una barra separadora central. El usuario puede arrastrar esta línea táctil hacia los lados para "desvelar" un filtro sobre el otro.
+*   **Modo 'Superposición' (Opacity):** Empalma la imagen derecha sobre la izquierda. Se habilita un controlador deslizante (Slider) que ajusta la opacidad del 0 al 100%, ideal para comparar el modelo aditivo vs sustractivo.
